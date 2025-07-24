@@ -61,6 +61,79 @@ exports.userAuth = async (req, res) => {
   }
 };
 
+exports.userDetail = async(req,res) =>{
+  const {id_user} = req.user;
+  
+  try {
+    const userData = await query(`
+      SELECT *
+      FROM table_user
+      WHERE id_user = $1
+    `,[id_user])
 
+    if(userData.rows.length === 0){
+      return res.status(404).json({
+        message:"user not found",
+      })
+    }
+    res.status(200).json({
+      message:"success",
+      data: userData.rows[0]
+    })
+  }catch (error) {
+    console.error("error ketika mengambil data user",error);
+    res.status(500).json({
+      message:"Internal Server Error"
+    })
+  }
+}
+
+exports.updateUserInfo = async(req,res) =>{
+  const { username, email,password,newPassword} = req.body
+  const {id_user} = req.user
+  try {
+    const updatedFields = {};
+    if(username) updatedFields.username = username;
+    if(email) updatedFields.email= email
+    if(password) {
+      const oldPasswordResult = await query(`SELECT password FROM table_user WHERE id_user =$1`,[id_user])
+
+      const oldHashedPassword = oldPasswordResult.rows[0]?.password;
+
+      if (!oldHashedPassword) {
+        return res.status(400).json({ message: "User tidak ditemukan." });
+      }
+
+      const isMatch = await bcrypt.compare(password, oldHashedPassword);
+
+      if (!isMatch) {
+        return res.status(400).json({ message: "Password lama salah." });
+      }
+
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+      updatedFields.password = hashedNewPassword;
+    }
+
+    const setFields = Object.keys(updatedFields).map((key,index) => `${key}=$${index+1}`).join(',');
+    const values = Object.values(updatedFields);
+    
+    const result = await query(`
+        UPDATE table_user SET ${setFields} WHERE id_user= $${values.length + 1} RETURNING *
+        `,[...values,id_user]
+    )
+
+    res.status(200).json({
+        message:"success",
+        data:result.rows
+    })
+
+  } catch (error) {
+    console.log("error ketika mengupdate info user",error);
+    res.status(500).json({
+      message:"Internal Server Error"
+    })  
+    
+  }
+}
 
 

@@ -20,13 +20,11 @@ app.use(cors(corsOptions))
 const userRoutes = require('./routes/userRoutes');
 const actRoutes = require('./routes/activityRoutes')
 
-
 app.use("/api/v1/acts",actRoutes);
 app.use("/api/v1/users",userRoutes)
 
-
 app.use((req,res,next) => {
-    res.status(404).json({ error: "API Route Not Found"})
+  res.status(404).json({ error: "API Route Not Found"})
 })
 
 const PORT = process.env.PORT || 5050;
