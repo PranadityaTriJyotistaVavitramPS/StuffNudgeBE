@@ -5,7 +5,7 @@ exports.addActivity = async(req,res) =>{
     const {activity_name, activity_date, items, description} = req.body;
     const {id_user} = req.user;
 
-    console.log(req.body)
+    console.log("ini yang diterima",req.body)
 
     try {
         const addActQuery = await query(`
@@ -55,11 +55,11 @@ exports.getActivities = async(req,res) =>{
         `,[id_user])
 
         const activities = getActivities.rows.map(row => {
-        const activity_date = toJakartaDateString(row.activity_date);
-        return {
-            ...row,
-            activity_date,
-        };
+            const activity_date = toJakartaDateString(row.activity_date);
+            return {
+                ...row,
+                activity_date,
+            };
         });
         return res.status(200).json({
             message:"success",

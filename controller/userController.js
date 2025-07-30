@@ -2,8 +2,9 @@ const { query } = require('../db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-exports.userAuth = async (req, res) => {
+exports.register = async (req, res) => {
   const { username, email, password } = req.body;
+  console.log("ini request nya", req.body)
 
   try {
     const checkUser = await query(
@@ -22,19 +23,37 @@ exports.userAuth = async (req, res) => {
         [username, email, hashedPassword]
       );
 
-      const token = jwt.sign(
-        { id_user: registerUser.rows[0].id_user },
-        process.env.JWT_SECRET
-      );
-
       return res.status(201).json({
         message: "User registered successfully",
         data: {
           user: registerUser.rows[0].username,
           email: registerUser.rows[0].email,
-          token
         },
       });
+    } else {
+      return res.status(409).json({
+        message:"username atau email sudah terdaftar, mohon login"
+      })
+    }
+
+  } catch (error) {
+    console.error("error ketika melakukan register:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+exports.login = async(req,res) =>{
+  const{username, password} = req.body;
+  try {
+    const checkUser = await query(
+      `SELECT * FROM table_user WHERE username = $1 `,
+      [username]
+    );
+
+    if(checkUser.rows.length === 0){
+      res.status(404).json({
+        message:"user belum terdaftar"
+      })
     }
 
     const isMatch = await bcrypt.compare(password, checkUser.rows[0].password);
@@ -48,18 +67,18 @@ exports.userAuth = async (req, res) => {
     );
 
     return res.status(200).json({
-      message: "User authenticated successfully",
-      data: {
-        user: checkUser.rows[0].username,
-        email: checkUser.rows[0].email,
-        token,
-      },
+      message: "success",
+      data: token
     });
-  } catch (error) {
-    console.error("Internal Server Error, controller userAuth:", error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    
+  }catch (error) {
+    console.error("Error ketika melakukan login", error);
+    res.status(500).json({
+      message:"Internal Server Error"
+    })
+    
   }
-};
+}
 
 exports.userDetail = async(req,res) =>{
   const {id_user} = req.user;
