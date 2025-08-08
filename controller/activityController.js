@@ -77,8 +77,8 @@ exports.getActivities = async(req,res) =>{
 exports.updateActivity = async(req,res) =>{
     const { activity_name, activity_date, items, activity_status, activity_urgency, description} = req.body
     const { id_activity } = req.params;
-    console.log("ini req body", req.body);
-    console.log("id_activity", id_activity);
+
+    console.log("ini yang diterima updateActivity",req.body)
     try {
         const updatedFields = {}
 
