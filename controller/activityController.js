@@ -75,7 +75,7 @@ exports.getActivities = async(req,res) =>{
 }
 
 exports.updateActivity = async(req,res) =>{
-    const { activity_name, activity_date, items, activity_status, activity_urgency} = req.body
+    const { activity_name, activity_date, items, activity_status, activity_urgency, description} = req.body
     const { id_activity } = req.params;
     console.log("ini req body", req.body);
     console.log("id_activity", id_activity);
@@ -90,6 +90,7 @@ exports.updateActivity = async(req,res) =>{
         if(items)updatedFields.items = items;
         if(activity_status)updatedFields.activity_status = activity_status
         if(activity_urgency)updatedFields.activity_urgency = activity_urgency
+        if(description)updatedFields.description = description
 
         const setFields = Object.keys(updatedFields).map((key,index) => `${key}=$${index+1}`).join(',');
         const values = Object.values(updatedFields);
